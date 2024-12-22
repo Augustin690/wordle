@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle Game</title>
+</head>
+<body>
+    <h1>Wordle Game</h1>
+    <p>Guess the {{ word_size }}-letter word! You have {{ max_attempts }} attempts.</p>
+
+    <form id="guess-form">
+        <label for="guess">Enter your guess:</label>
+        <input type="text" id="guess" name="guess" maxlength="{{ word_size }}">
+        <button type="submit">Submit Guess</button>
+    </form>
+
+    <div id="attempts">
+        <h2>Attempts</h2>
+        <ul>
+            {% for attempt in game_state["attempts"] %}
+                <li>
+                    <strong>{{ attempt.guess }}</strong> - Feedback: {{ attempt.feedback }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        const form = document.getElementById("guess-form");
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const guess = document.getElementById("guess").value;
+            const response = await fetch("/guess", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `guess=${guess}`,
+            });
+            if (!response.ok) {
+                alert((await response.json()).error);
+            } else {
+                location.reload();
+            }
+        });
+    </script>
+</body>
+</html>
