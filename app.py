@@ -12,8 +12,11 @@ game_state = {"attempts": [], "status": "ongoing"}
 
 @app.route("/")
 def index():
-    return render_template("index.html", game_state=game_state, word_size=word_size, max_attempts=max_attempts)
+    # Initialize game state if not done yet
+    if "letter_feedback" not in game_state:
+        game_state["letter_feedback"] = {}
 
+    return render_template("index.html", game_state=game_state, word_size=word_size, max_attempts=max_attempts)
 
 @app.route("/guess", methods=["POST"])
 def guess():
@@ -28,19 +31,31 @@ def guess():
 
     feedback_result = guess_wordle("/random", guess_word)
 
-    # Update game state
+    # Update letter feedback for the alphabet grid
+    letter_feedback = game_state.get("letter_feedback", {})
+
+    for i, letter in enumerate(guess_word):
+        feedback = feedback_result[i].get("result")
+        if feedback == "correct":
+            letter_feedback[letter] = "correct"
+        elif feedback == "present":
+            letter_feedback[letter] = "present"
+        else:
+            letter_feedback[letter] = "absent"
+
+    # Update the game state with the letter feedback
+    game_state["letter_feedback"] = letter_feedback
+
+    # Update game state with the guess and feedback
     game_state["attempts"].append({"guess": guess_word, "feedback": feedback_result})
     attempt += 1
 
-    if  all(r["result"] == "correct" for r in feedback_result):
+    if all(r.get("result") == "correct" for r in feedback_result):
         game_state["status"] = "win"
-        return jsonify({"message": "Congratulations! You guessed the word."})
+        return jsonify({"message": "Congratulations! You guessed the word!"}), 200  # Success response
 
-    if attempt >= max_attempts:
-        game_state["status"] = "lose"
-        return jsonify({"message": "Game Over! You've used all attempts."})
+    return jsonify({"feedback": feedback_result}), 200  # Regular feedback response
 
-    return jsonify({"feedback": feedback_result})
 
 
 if __name__ == "__main__":
