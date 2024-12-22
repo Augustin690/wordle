@@ -27,6 +27,40 @@
             color: #4a5568;
         }
 
+        /* Alphabet Grid Styles */
+        #alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .letter {
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 15px;
+            background-color: #edf2f7;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .correct {
+            background-color: green;
+            color: white;
+        }
+
+        .present {
+            background-color: yellow;
+            color: black;
+        }
+
+        .absent {
+            background-color: gray;
+            color: white;
+        }
+
         /* Game Form Styles */
         #guess-form {
             margin-top: 20px;
@@ -105,12 +139,35 @@
         .lose {
             color: red;
         }
+
+        /* Status Message */
+        #status-message {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: green;
+        }
     </style>
 </head>
 <body>
     <h1>Wordle Game</h1>
     <p>Guess the {{ word_size }}-letter word! You have {{ max_attempts }} attempts.</p>
 
+    <!-- Display Winning Message if Game is Won -->
+    {% if game_state["status"] == "win" %}
+        <div id="status-message" class="win">
+            Congratulations! You guessed the word!
+        </div>
+    {% endif %}
+
+    <!-- Alphabet Grid -->
+    <div id="alphabet-grid">
+        {% for letter in 'abcdefghijklmnopqrstuvwxyz' %}
+            <div class="letter {{ game_state["letter_feedback"].get(letter, '') }}">{{ letter }}</div>
+        {% endfor %}
+    </div>
+
+    <!-- Game Form -->
     <form id="guess-form">
         <label for="guess">Your Guess:</label>
         <input type="text" id="guess" name="guess" maxlength="{{ word_size }}" placeholder="Enter your word...">
@@ -156,4 +213,6 @@
     </script>
 </body>
 </html>
+
+
 
